@@ -10,7 +10,7 @@ export const recipeTool = createTool({
   }),
   execute: async (inputData) => {
     const apiKey = process.env.SPOONACULAR_API_KEY;
-    const { ingredients } = inputData.context;
+    const { ingredients } = inputData;
 
     const res = await fetch(
       `https://api.spoonacular.com/recipes/findByIngredients?ingredients=${encodeURIComponent(ingredients)}&number=10&ranking=1&ignorePantry=true&apiKey=${apiKey}`
