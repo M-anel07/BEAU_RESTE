@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import RecipeCard from "./components/recipe-card";
 
 type HistoryItem = {
   ingredients: string[];
   recipe: string;
 };
-
 
 export default function Home() {
   const [copie, setCopie] = useState(false);
@@ -14,9 +14,14 @@ export default function Home() {
   const [frigo, setFrigo] = useState<string[]>([]);
   const [reponse, setReponse] = useState("");
   const [loading, setLoading] = useState(false);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const saved = localStorage.getItem("beau-reste-history");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
 
-  // 1. État pour le fond de placard coché
   const [placard, setPlacard] = useState({
     ailOignon: false,
     cremeBeurre: false,
@@ -24,11 +29,16 @@ export default function Home() {
     sauces: false,
   });
 
+  const updateHistory = (newHistory: HistoryItem[]) => {
+    setHistory(newHistory);
+    localStorage.setItem("beau-reste-history", JSON.stringify(newHistory));
+  };
+
   const ajouterIngredient = (e?: FormEvent<HTMLFormElement>) => {
     e?.preventDefault();
-    const ingredient = currentIngredient.trim();
-    if (!ingredient) return;
-    setFrigo((cur) => [...new Set([...cur, ingredient])]);
+    const parts = currentIngredient.split(",").map(s => s.trim()).filter(Boolean);
+    if (parts.length === 0) return;
+    setFrigo((cur) => [...new Set([...cur, ...parts])]);
     setCurrentIngredient("");
   };
 
@@ -37,7 +47,6 @@ export default function Home() {
     setLoading(true);
     setReponse("");
 
-    // 2. Assemblage automatique des ingrédients du frigo + les cochés
     const listeBasiques = [];
     if (placard.ailOignon) listeBasiques.push("ail", "oignon");
     if (placard.cremeBeurre) listeBasiques.push("crème fraîche", "beurre");
@@ -56,7 +65,7 @@ export default function Home() {
       const data = await res.json();
       const text = typeof data.text === "string" ? data.text : "Réponse indisponible.";
       setReponse(text);
-      setHistory((cur) => [{ ingredients: tousLesIngredients, recipe: text }, ...cur]);
+      updateHistory([{ ingredients: tousLesIngredients, recipe: text }, ...history]);
     } catch {
       setReponse("Erreur technique.");
     } finally {
@@ -79,14 +88,13 @@ export default function Home() {
   };
 
   const supprimerHistorique = (i: number) =>
-    setHistory((cur) => cur.filter((_, idx) => idx !== i));
+    updateHistory(history.filter((_, idx) => idx !== i));
 
   const copierRecette = async () => {
     if (!reponse) return;
     try {
       await navigator.clipboard.writeText(reponse);
       setCopie(true);
-      // Le bouton repasse à "Copier" après 2 secondes
       setTimeout(() => setCopie(false), 2000);
     } catch (err) {
       console.error("Erreur de copie :", err);
@@ -171,7 +179,35 @@ export default function Home() {
               </button>
             </form>
 
-            {/* 3. Section Fond de Placard (Checkboxes avec classes de base Tailwind) */}
+            {/* Chips ingrédients */}
+            <div className="ingredients-area">
+              {frigo.length === 0 ? (
+                <p className="ingredients-placeholder">
+                  Votre frigo est vide commencez par ajouter des ingrédients
+                </p>
+              ) : (
+                <div className="chips-grid">
+                  <p className="chips-label">Dans votre frigo</p>
+                  <div className="chips-row">
+                    {frigo.map((item, index) => (
+                      <span key={item + index} className="chip">
+                        {item}
+                        <button
+                          type="button"
+                          className="chip-remove"
+                          onClick={() => supprimerIngredient(index)}
+                          aria-label={`Retirer ${item}`}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Fond de placard */}
             <div style={{ marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid #e7e5e4" }}>
               <p style={{ fontSize: "11px", fontWeight: "bold", textTransform: "uppercase", color: "#78716c", marginBottom: "0.75rem" }}>
                 Fond de placard disponible :
@@ -223,40 +259,11 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Chips ingrédients */}
-          <div className="ingredients-area">
-            {frigo.length === 0 ? (
-              <p className="ingredients-placeholder">
-                Votre frigo est vide commencez par ajouter des ingrédients
-              </p>
-            ) : (
-              <div className="chips-grid">
-                <p className="chips-label">Dans votre frigo</p>
-                <div className="chips-row">
-                  {frigo.map((item, index) => (
-                    <span key={item + index} className="chip">
-                      {item}
-                      <button
-                        type="button"
-                        className="chip-remove"
-                        onClick={() => supprimerIngredient(index)}
-                        aria-label={`Retirer ${item}`}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* Recette */}
           <section className="recipe-section">
             <div className="recipe-header" style={{ display: "flex", justifyContent: "between", alignItems: "center" }}>
               <h3 className="recipe-title">Résultat</h3>
               <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                {/* Notre nouveau bouton de copie, visible uniquement si une recette est prête */}
                 {reponse && !loading && (
                   <button
                     type="button"
@@ -265,7 +272,7 @@ export default function Home() {
                       background: "none",
                       border: "none",
                       fontSize: "12px",
-                      color: copie ? "#711D1B" : "#78716c", // Devient vert quand c'est copié
+                      color: copie ? "#711D1B" : "#78716c",
                       fontWeight: "bold",
                       cursor: "pointer",
                       display: "flex",
@@ -274,6 +281,24 @@ export default function Home() {
                     }}
                   >
                     {copie ? "✓ Copié !" : "Copier"}
+                  </button>
+                )}
+                {reponse && !loading && (
+                  <button
+                    type="button"
+                    onClick={cuisiner}
+                    style={{
+                      background: "none",
+                      border: "1px solid #d6d3d1",
+                      borderRadius: "999px",
+                      fontSize: "12px",
+                      color: "#78716c",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                      padding: "4px 12px",
+                    }}
+                  >
+                    Regénérer
                   </button>
                 )}
                 <span className={`recipe-status ${reponse ? "active" : ""}`}>
@@ -291,7 +316,7 @@ export default function Home() {
                   <p>L'agent analyse vos ingrédients…</p>
                 </div>
               ) : reponse ? (
-                <div className="recipe-text">{reponse}</div>
+                <RecipeCard text={reponse} />
               ) : (
                 <div className="recipe-placeholder">
                   <p className="placeholder-title">Aucune recette affichée</p>
@@ -304,7 +329,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ── 4. Footer discret intégré en bas du flux principal ── */}
+          {/* Footer */}
           <footer style={{ marginTop: "auto", paddingTop: "2.5rem", paddingBottom: "1rem", textAlign: "center", borderTop: "1px solid #f5f5f4" }}>
             <p style={{ fontSize: "10px", fontWeight: "bold", letterSpacing: "0.3em", color: "#d6d3d1", textTransform: "uppercase" }}>
               BENGUEDIH Manel - 2026
