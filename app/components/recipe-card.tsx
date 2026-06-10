@@ -11,7 +11,12 @@ export default function RecipeCard({ text }: Props) {
         ?.replace(/^titre\s*:\s*/i, "") ?? "";
 
     const tempsLine = lines.find(l => /^temps\s*:/i.test(l));
-    const temps = tempsLine?.replace(/^temps\s*:\s*/i, "") ?? "";
+    let temps = tempsLine?.replace(/^temps\s*:\s*/i, "") ?? "";
+
+    // 👈 Ajoute l'unité si elle n'y est pas (ex: "25" devient "25 min")
+    if (temps && !/min/i.test(temps)) {
+        temps = `${temps} min`;
+    }
 
     const ingredientLines = lines
         .filter(l => l.startsWith("-"))

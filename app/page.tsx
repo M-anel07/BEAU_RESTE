@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import RecipeCard from "./components/recipe-card";
+import Link from "next/link";
+import Footer from "./components/footer";
 
 type HistoryItem = {
   ingredients: string[];
   recipe: string;
+  titre: string;
 };
 
 export default function Home() {
@@ -14,13 +17,14 @@ export default function Home() {
   const [frigo, setFrigo] = useState<string[]>([]);
   const [reponse, setReponse] = useState("");
   const [loading, setLoading] = useState(false);
-  const [history, setHistory] = useState<HistoryItem[]>(() => {
-    if (typeof window === "undefined") return [];
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+
+  useEffect(() => {
     try {
       const saved = localStorage.getItem("beau-reste-history");
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
-  });
+      if (saved) setHistory(JSON.parse(saved));
+    } catch { }
+  }, []);
 
   const [placard, setPlacard] = useState({
     ailOignon: false,
@@ -64,8 +68,10 @@ export default function Home() {
       if (!res.ok) throw new Error("Request failed");
       const data = await res.json();
       const text = typeof data.text === "string" ? data.text : "Réponse indisponible.";
+      const titreMatch = text.match(/^titre\s*:\s*(.+)/im);
+      const titre = titreMatch ? titreMatch[1].trim() : "Recette";
       setReponse(text);
-      updateHistory([{ ingredients: tousLesIngredients, recipe: text }, ...history]);
+      updateHistory([{ ingredients: tousLesIngredients, recipe: text, titre }, ...history]);
     } catch {
       setReponse("Erreur technique.");
     } finally {
@@ -118,19 +124,24 @@ export default function Home() {
 
       <div className="app-body">
         {/* ── Sidebar historique ── */}
-        <aside className="sidebar">
-          <div className="sidebar-header">
-            <p className="section-label">Journal</p>
-            <h2 className="sidebar-title">Recettes passées</h2>
+        <aside className="sidebar" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+          
+          {/* Header sur la même ligne */}
+          <div className="sidebar-header" style={{ display: "flex", alignItems: "baseline", gap: "0.75rem" }}>
+            <h2 className="sidebar-title" style={{ margin: 0 }}>Recettes passées</h2>
+            <p className="section-label" style={{ margin: 0, fontSize: "11px", fontWeight: "bold", textTransform: "uppercase", color: "#78716c", letterSpacing: "0.05em" }}>
+              • Journal
+            </p>
           </div>
 
-          <div className="history-list">
+          {/* Zone des cartes : On affiche STRICTEMENT les 3 dernières. */}
+          <div className="history-list" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {history.length === 0 ? (
               <div className="history-empty">
-                <p>Aucune recette pour l'instant lancez votre première génération</p>
+                <p>Aucune recette pour l'instant, lancez votre première génération</p>
               </div>
             ) : (
-              history.map((item, index) => (
+              history.slice(0, 4).map((item, index) => (
                 <article key={index} className="history-card">
                   <button
                     type="button"
@@ -140,9 +151,7 @@ export default function Home() {
                       setFrigo(item.ingredients);
                     }}
                   >
-                    <p className="history-count">
-                      {item.ingredients.length} ingrédient{item.ingredients.length > 1 ? "s" : ""}
-                    </p>
+                    <p className="history-count">{item.titre}</p>
                     <p className="history-ingredients">
                       {item.ingredients.join(", ")}
                     </p>
@@ -159,10 +168,27 @@ export default function Home() {
               ))
             )}
           </div>
+
+          {/* Lien vers la page historique si plus de 3 recettes */}
+          {history.length > 4 && (
+            <div style={{ display: "flex", justifyContent: "center", width: "100%", paddingTop: "0.5rem" }}>
+              <Link
+                href="/historique"
+                style={{
+                  color: "#711D1B",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  textDecoration: "none",
+                }}
+              >
+                Voir tout l'historique ({history.length}) →
+              </Link>
+            </div>
+          )}
         </aside>
 
         {/* ── Zone principale ── */}
-        <main className="main-area">
+        <main className="main-area" style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
 
           {/* Input bar */}
           <div className="input-panel">
@@ -183,7 +209,7 @@ export default function Home() {
             <div className="ingredients-area">
               {frigo.length === 0 ? (
                 <p className="ingredients-placeholder">
-                  Votre frigo est vide commencez par ajouter des ingrédients
+                  Votre frigo est vide, commencez par ajouter des ingrédients
                 </p>
               ) : (
                 <div className="chips-grid">
@@ -261,7 +287,7 @@ export default function Home() {
 
           {/* Recette */}
           <section className="recipe-section">
-            <div className="recipe-header" style={{ display: "flex", justifyContent: "between", alignItems: "center" }}>
+            <div className="recipe-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h3 className="recipe-title">Résultat</h3>
               <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                 {reponse && !loading && (
@@ -316,7 +342,25 @@ export default function Home() {
                   <p>L'agent analyse vos ingrédients…</p>
                 </div>
               ) : reponse ? (
-                <RecipeCard text={reponse} />
+                /* Conteneur avec la taille de police idéale et modérée */
+                <div className="home-recipe-container">
+                  <style jsx global>{`
+                    .home-recipe-container p, 
+                    .home-recipe-container li,
+                    .home-recipe-container span,
+                    .home-recipe-container div {
+                        font-size: 14px !important;
+                        line-height: 1.6 !important;
+                    }
+                    .home-recipe-container h3,
+                    .home-recipe-container h4 {
+                        font-size: 18px !important;
+                        font-weight: bold !important;
+                        color: #711D1B !important;
+                    }
+                  `}</style>
+                  <RecipeCard text={reponse} />
+                </div>
               ) : (
                 <div className="recipe-placeholder">
                   <p className="placeholder-title">Aucune recette affichée</p>
@@ -329,12 +373,8 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Footer */}
-          <footer style={{ marginTop: "auto", paddingTop: "2.5rem", paddingBottom: "1rem", textAlign: "center", borderTop: "1px solid #f5f5f4" }}>
-            <p style={{ fontSize: "10px", fontWeight: "bold", letterSpacing: "0.3em", color: "#d6d3d1", textTransform: "uppercase" }}>
-              BENGUEDIH Manel - 2026
-            </p>
-          </footer>
+          {/* Ton composant Footer externalisé et réutilisable */}
+          <Footer />
         </main>
       </div>
     </div>
