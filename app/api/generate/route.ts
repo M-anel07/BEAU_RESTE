@@ -36,6 +36,10 @@ export async function POST(req: Request) {
         text = text.replace(/#/g, "");
         text = text.replace(/---/g, "_________________________________");
 
+        text = text.replace(/\*\*/g, "");
+        text = text.replace(/#/g, "");
+        console.log("=== RÉPONSE MODÈLE ===", text); // ← ici
+
         return NextResponse.json({ text });
 
     } catch (error) {

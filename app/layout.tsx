@@ -16,8 +16,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mon Frigo IA",
+  title: "Beau Reste",
   description: "Générateur de recettes à partir des ingrédients du frigo",
+  icons: {
+    icon: "/favicon-512.png", 
+  },
 };
 
 export default function RootLayout({
