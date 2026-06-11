@@ -1,47 +1,29 @@
 "use client";
 
-type Props = {
-    onDemo: () => void;
-};
+type Props = { onDemo: () => void; };
 
 export default function BandeauAccueil({ onDemo }: Props) {
     return (
-        <div style={{
-            backgroundColor: "#ffffff",
-            border: "1px solid #e7e5e4",
-            borderRadius: "16px",
-            padding: "1.25rem 1.5rem",
-            fontSize: "14px",
-            color: "#44403c",
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.5rem",
-        }}>
-            <p style={{ margin: 0, fontWeight: "600", color: "#711D1B" }}>
-                Bienvenue sur Beau Reste
-            </p>
-            <p style={{ margin: 0, color: "#78716c", lineHeight: "1.5" }}>
-                Ajoutez simplement ce qui traîne dans votre frigo, on s'occupe de vous
-                trouver une recette anti-gaspillage sur-mesure.
-            </p>
-            <button
-                type="button"
-                onClick={onDemo}
-                style={{
-                    alignSelf: "flex-start",
-                    background: "none",
-                    border: "none",
-                    color: "#711D1B",
-                    textDecoration: "underline",
-                    fontSize: "13px",
-                    fontWeight: "bold",
-                    padding: 0,
-                    marginTop: "0.25rem",
-                    cursor: "pointer",
-                }}
-            >
-                Tester immédiatement avec un exemple (Pâtes, Tomate, Feta) →
+        <section className="intro-card">
+            <div className="intro-card__copy">
+                <p className="intro-card__eyebrow">Première étape</p>
+                <p className="intro-card__text">
+                    Commencez avec trois ingrédients, puis laissez le générateur proposer une recette simple et exploitable.
+                </p>
+            </div>
+
+            <div className="intro-card__visual" aria-hidden="true">
+                <svg viewBox="0 0 120 120" role="presentation" focusable="false">
+                    <circle cx="60" cy="60" r="52" className="intro-card__ring" />
+                    <path d="M34 75c8-15 16-23 26-23s18 8 26 23" className="intro-card__wave" />
+                    <circle cx="48" cy="46" r="7" className="intro-card__dot" />
+                    <circle cx="72" cy="46" r="7" className="intro-card__dot" />
+                </svg>
+            </div>
+
+            <button type="button" className="intro-card__button" onClick={onDemo}>
+                Essayer un exemple
             </button>
-        </div>
+        </section>
     );
 }

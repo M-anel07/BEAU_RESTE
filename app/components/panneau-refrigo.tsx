@@ -9,33 +9,41 @@ type Props = {
 };
 
 export default function PanneauRefrigo({ fridge, onGenerate, loading }: Props) {
-    const { currentIngredient, setCurrentIngredient, frigo, placard, setPlacard,
+    const { currentIngredient, setCurrentIngredient, frigo,
         ajouterIngredient, supprimerIngredient, viderFrigo } = fridge;
 
     return (
-        <div className="input-panel">
-            <form onSubmit={ajouterIngredient} className="input-row">
+        <section className="panel-card">
+            <div className="panel-card__head">
+                <p className="panel-card__eyebrow">Votre frigo</p>
+                <h2 className="panel-card__title">Ajoutez ce que vous avez sous la main.</h2>
+                <p className="panel-card__text">
+                    Séparez les ingrédients avec une virgule pour accélérer la saisie.
+                </p>
+            </div>
+
+            <form onSubmit={ajouterIngredient} className="panel-form">
                 <input
                     type="text"
-                    placeholder="Ajouter un ingrédient ex : tomate, feta, basilic…"
-                    className="ingredient-input"
+                    placeholder="Tomate, feta, restes de poulet…"
+                    className="panel-input"
                     value={currentIngredient}
                     onChange={(e) => setCurrentIngredient(e.target.value)}
                 />
-                <button type="submit" className="btn btn-add">
+                <button type="submit" className="panel-add" aria-label="Ajouter l'ingrédient">
                     Ajouter
                 </button>
             </form>
 
-            {/* Chips ingrédients */}
             <div className="ingredients-area">
                 {frigo.length === 0 ? (
-                    <p className="ingredients-placeholder">
-                        Votre frigo est vide, commencez par ajouter des ingrédients
-                    </p>
+                    <div className="empty-fridge">
+                        <span>Le frigo est vide pour le moment.</span>
+                        <p>Ajoutez quelques produits ou lancez l’exemple pour démarrer.</p>
+                    </div>
                 ) : (
-                    <div className="chips-grid">
-                        <p className="chips-label">Dans votre frigo</p>
+                    <>
+                        <p className="chips-label">{frigo.length} ingrédient{frigo.length > 1 ? "s" : ""} détecté{frigo.length > 1 ? "s" : ""}</p>
                         <div className="chips-row">
                             {frigo.map((item, index) => (
                                 <span key={item + index} className="chip">
@@ -51,29 +59,25 @@ export default function PanneauRefrigo({ fridge, onGenerate, loading }: Props) {
                                 </span>
                             ))}
                         </div>
-                    </div>
+                    </>
                 )}
             </div>
 
-            <div className="action-row" style={{ marginTop: "1.5rem" }}>
+            <div className="panel-actions">
                 <button
                     type="button"
-                    className="btn btn-primary"
+                    className="panel-primary"
                     onClick={onGenerate}
                     disabled={loading || frigo.length === 0}
                 >
-                    {loading ? (
-                        <span className="btn-loading">
-                            <span className="dot" /><span className="dot" /><span className="dot" />
-                        </span>
-                    ) : (
-                        "Générer une recette"
-                    )}
+                    {loading ? "Génération…" : "Générer une recette"}
                 </button>
-                <button type="button" className="btn btn-ghost" onClick={viderFrigo}>
-                    Tout vider
-                </button>
+                {frigo.length > 0 && (
+                    <button type="button" className="panel-secondary" onClick={viderFrigo}>
+                        Tout vider
+                    </button>
+                )}
             </div>
-        </div>
+        </section>
     );
 }

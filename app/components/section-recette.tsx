@@ -12,66 +12,37 @@ type Props = {
 
 export default function SectionRecette({ reponse, loading, copie, onCopy, onRegenerate }: Props) {
     return (
-        <section className="recipe-section">
-            <div className="recipe-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h3 className="recipe-title">Résultat</h3>
-                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <section className="result-card">
+            <div className="result-card__head">
+                <div className="recipe-actions">
                     {reponse && !loading && (
-                        <button
-                            type="button"
-                            onClick={onCopy}
-                            style={{
-                                background: "none",
-                                border: "none",
-                                fontSize: "12px",
-                                color: copie ? "#711D1B" : "#78716c",
-                                fontWeight: "bold",
-                                cursor: "pointer",
-                            }}
-                        >
-                            {copie ? "✓ Copié !" : "Copier"}
-                        </button>
+                        <span className={`recipe-action-link ${copie ? "is-active" : ""}`} onClick={onCopy} role="button" tabIndex={0}>
+                            {copie ? "Copié" : "Copier"}
+                        </span>
                     )}
                     {reponse && !loading && (
-                        <button
-                            type="button"
-                            onClick={onRegenerate}
-                            style={{
-                                background: "none",
-                                border: "1px solid #d6d3d1",
-                                borderRadius: "999px",
-                                fontSize: "12px",
-                                color: "#78716c",
-                                fontWeight: "bold",
-                                cursor: "pointer",
-                                padding: "4px 12px",
-                            }}
-                        >
-                            Regénérer
-                        </button>
+                        <span className="recipe-action-link" onClick={onRegenerate} role="button" tabIndex={0}>
+                            Régénérer
+                        </span>
                     )}
-                    <span className={`recipe-status ${reponse ? "active" : ""}`}>
-                        {reponse ? "Prête" : "En attente"}
-                    </span>
                 </div>
             </div>
 
-            <div className="recipe-body">
+            <div className="result-card__body">
                 {loading ? (
                     <div className="recipe-loading">
-                        <div className="loading-bar"><div className="loading-fill" /></div>
-                        <p>L'agent analyse vos ingrédients…</p>
+                        <div className="loading-bar">
+                            <div className="loading-fill" />
+                        </div>
+                        <p className="loading-text">La recette se construit…</p>
                     </div>
                 ) : reponse ? (
-                    <div className="home-recipe-container">
-                        <RecipeCard text={reponse} />
-                    </div>
+                    <RecipeCard text={reponse} />
                 ) : (
                     <div className="recipe-placeholder">
-                        <p className="placeholder-title">Aucune recette affichée</p>
+                        <p className="placeholder-title">Aucune recette pour le moment</p>
                         <p className="placeholder-body">
-                            Ajoutez les ingrédients disponibles dans votre frigo puis lancez
-                            la génération pour obtenir une recette adaptée
+                            Ajoutez quelques ingrédients, puis lancez la génération pour obtenir une proposition structurée.
                         </p>
                     </div>
                 )}

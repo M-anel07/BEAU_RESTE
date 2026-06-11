@@ -1,6 +1,9 @@
-type Props = { text: string };
+type Props = {
+    text: string;
+    showTitle?: boolean;
+};
 
-export default function RecipeCard({ text }: Props) {
+export default function RecipeCard({ text, showTitle = true }: Props) {
     const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
 
     const etapesRaw = lines
@@ -12,11 +15,7 @@ export default function RecipeCard({ text }: Props) {
 
     const tempsLine = lines.find(l => /^temps\s*:/i.test(l));
     let temps = tempsLine?.replace(/^temps\s*:\s*/i, "") ?? "";
-
-    // 👈 Ajoute l'unité si elle n'y est pas (ex: "25" devient "25 min")
-    if (temps && !/min/i.test(temps)) {
-        temps = `${temps} min`;
-    }
+    if (temps && !/min/i.test(temps)) temps = `${temps} min`;
 
     const ingredientLines = lines
         .filter(l => l.startsWith("-"))
@@ -29,9 +28,14 @@ export default function RecipeCard({ text }: Props) {
     );
 
     return (
-        <div className="recipe-card">
-            <p className="recipe-card-name">{titre}</p>
-            {temps && <p className="recipe-card-time">{temps}</p>}
+        <article className="recipe-document">
+            <header className="recipe-document__head">
+                <div className="recipe-document__title-row">
+                    {showTitle && <h3 className="recipe-document__title">{titre || "Recette sans titre"}</h3>}
+                    {temps && <p className="recipe-document__time">{temps}</p>}
+                </div>
+            </header>
+
             {ingredientLines.length > 0 && (
                 <>
                     <p className="recipe-card-section">Ingrédients</p>
@@ -55,6 +59,6 @@ export default function RecipeCard({ text }: Props) {
                     </ol>
                 </>
             )}
-        </div>
+        </article>
     );
 }

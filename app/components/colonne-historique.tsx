@@ -11,35 +11,32 @@ type Props = {
 
 export default function ColonneHistorique({ history, onSelect, onDelete }: Props) {
     return (
-        <aside className="sidebar" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-            <div className="sidebar-header" style={{ display: "flex", alignItems: "baseline", gap: "0.75rem" }}>
-                <h2 className="sidebar-title" style={{ margin: 0 }}>Recettes passées</h2>
-                <p className="section-label" style={{ margin: 0, fontSize: "11px", fontWeight: "bold", textTransform: "uppercase", color: "#78716c", letterSpacing: "0.05em" }}>
-                    • Journal
+        <aside className="history-panel">
+            <div className="history-panel__head">
+                <p className="history-panel__eyebrow">Journal</p>
+                <h2 className="history-panel__title">Dernières recettes</h2>
+                <p className="history-panel__text">
+                    Revenez sur une proposition précédente ou supprimez les essais qui ne vous servent plus.
                 </p>
             </div>
 
-            <div className="history-list" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <div className="history-list">
                 {history.length === 0 ? (
                     <div className="history-empty">
-                        <p>Aucune recette pour l'instant, lancez votre première génération</p>
+                        Aucune recette pour l’instant. Lancez votre première génération pour remplir ce carnet.
                     </div>
                 ) : (
-                    history.slice(0, 4).map((item, index) => (
+                    history.slice(0, 1).map((item, index) => (
                         <article key={index} className="history-card">
-                            <button
-                                type="button"
-                                className="history-card-body"
-                                onClick={() => onSelect(item)}
-                            >
-                                <p className="history-count">{item.titre}</p>
-                                <p className="history-ingredients">{item.ingredients.join(", ")}</p>
+                            <button type="button" className="history-card__body" onClick={() => onSelect(item)}>
+                                <p className="history-card__title">{item.titre}</p>
+                                <p className="history-card__meta">{item.ingredients.join(", ")}</p>
                             </button>
                             <button
                                 type="button"
                                 className="history-delete"
                                 onClick={() => onDelete(index)}
-                                aria-label={`Supprimer la recette ${index + 1}`}
+                                aria-label="Supprimer"
                             >
                                 ×
                             </button>
@@ -49,9 +46,9 @@ export default function ColonneHistorique({ history, onSelect, onDelete }: Props
             </div>
 
             {history.length > 4 && (
-                <div style={{ display: "flex", justifyContent: "center", width: "100%", paddingTop: "0.5rem" }}>
-                    <Link href="/historique" style={{ color: "#711D1B", fontSize: "13px", fontWeight: "600", textDecoration: "none" }}>
-                        Voir tout l'historique ({history.length}) →
+                <div className="history-panel__footer">
+                    <Link href="/historique" className="history-panel__link">
+                        Voir toutes les recettes ({history.length})
                     </Link>
                 </div>
             )}
