@@ -43,7 +43,7 @@ export const mastra = new Mastra({
 
                       Tu n'es pas obligé d'utiliser tous les ingrédients. Privilégie la cohérence gustative. Si certains ingrédients ne s'associent pas bien, ignore-les.
                       `,
-      model: 'groq/llama-3.3-70b-versatile',
+      model: 'groq/llama-3.1-8b-instant',
       tools: { recipeTool },
     }),
   },
