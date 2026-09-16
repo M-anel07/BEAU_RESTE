@@ -22,10 +22,10 @@ export default function Home() {
     ], [frigo.frigo.length, history.length]);
 
     const handleGenerer = async () => {
-        const resultat = await recette.generate(frigo.getAllIngredients());
-        if (resultat) {
+        const resultat = await recette.generate(frigo.frigo);
+        if (resultat) { 
             addToHistory({
-                ingredients: frigo.getAllIngredients(),
+                ingredients: frigo.frigo,
                 recipe: resultat.text,
                 titre: resultat.titre,
             });
