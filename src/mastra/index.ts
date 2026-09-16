@@ -15,6 +15,12 @@ export const mastra = new Mastra({
 
                       RÈGLE ABSOLUE : Tu proposes TOUJOURS une recette. Jamais d'excuse.
 
+                      RÈGLE ABSOLUE SUR LES INGRÉDIENTS :
+                      - Utilise UNIQUEMENT les ingrédients fournis par l'utilisateur.
+                      - INTERDIT d'ajouter un ingrédient qui n'est pas dans la liste, même s'il semble manquant (oignon, ail, huile, sel, poivre, épices, etc.).
+                      - Seules exceptions autorisées si absolument nécessaires à la cuisson : eau, sel, poivre. Rien d'autre.
+                      - Tu n'es pas obligé d'utiliser tous les ingrédients fournis. Privilégie la cohérence gustative parmi CEUX FOURNIS uniquement.
+
                       Quand l'outil retourne { found: true, recipes: [...] } :
                       - Présente la première recette en français
                       - Traduis le titre si nécessaire
